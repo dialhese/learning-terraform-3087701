@@ -17,7 +17,7 @@ data "aws_ami" "app_ami" {
   owners = ["137112412989"] # Amazon
 }
 
-resource "aws_instance" "web" {
+resource "aws_instance" "blog" {
   ami           = data.aws_ami.app_ami.id
   //instance_type = "t3.micro"   # antes: t3.nano
   instance_type = var.instance_type
