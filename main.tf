@@ -113,7 +113,7 @@ module "blog_sg" {
 //
 //  security_group_id = aws_security_group.blog.id
 //}
-S
+
 //resource "aws_security_group_rule" "blog_everything_out" {
 //  type        = "egress"
 //  from_port   = 0
