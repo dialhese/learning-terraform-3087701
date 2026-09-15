@@ -107,6 +107,7 @@ module "blog_autoscaling" {
   vpc_zone_identifier = module.blog_vpc.public_subnets
 
   launch_template_name = "blog"
+  update_default_version  = true
   security_groups      = [module.blog_sg.id]
   instance_type        = var.instance_type
   image_id             = data.aws_ami.app_ami.id
@@ -121,7 +122,7 @@ module "blog_autoscaling" {
               echo "<h1>Hello from Terraform</h1>" > /var/www/html/index.html
               EOF
   )
-  
+
   traffic_source_attachments = {
     blog-alb ={
       traffic_source_identifier = aws_lb_target_group.blog.arn
