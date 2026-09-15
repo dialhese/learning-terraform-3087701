@@ -39,22 +39,6 @@ module "blog_vpc" {
   }
 }
 
-
-resource "aws_instance" "blog" {
-  ami           = data.aws_ami.app_ami.id
-  //instance_type = "t3.micro"   # antes: t3.nano
-  instance_type = var.instance_type
-
-  //vpc_security_group_ids = [aws_security_group.blog.id]
-  vpc_security_group_ids = [module.blog_sg.id]
-
-  subnet_id = module.blog_vpc.public_subnets[0]
-
-  tags = {
-    Name = "Learning Terraform"
-  }
-}
-
 module "blog_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "6.0.0"
@@ -125,39 +109,24 @@ resource "aws_lb_target_group_attachment" "blog" {
   port             = 80
 }
 
-//resource "aws_security_group" "blog" {
-//  name        = "blog"
-//  description = "Allow http and https in. Allow everithing out"
-//
-//  vpc_id = data.aws_vpc.default.id
-//}
+module "blog_autoscaling" {
+  source  = "terraform-aws-modules/autoscaling/aws"
+  version = "9.3.1"
+  name = "blog"
 
-//resource "aws_security_group_rule" "blog_http_in" {
-// type        = "ingress"
-//  from_port   = 80
-//  to_port     = 80
-//  protocol    = "tcp"
-//  cidr_blocks = ["0.0.0.0/0"]
-//
-//  security_group_id = aws_security_group.blog.id
-//}
+  min_size = 1
+  max_size = 2
 
-//resource "aws_security_group_rule" "blog_https_in" {
-//  type        = "ingress"
-//  from_port   = 443
-//  to_port     = 443
-//  protocol    = "tcp"
-//  cidr_blocks = ["0.0.0.0/0"]
-//
-//  security_group_id = aws_security_group.blog.id
-//}
+  vpc_zone_identifier = module.blog_vpc.public_subnets
 
-//resource "aws_security_group_rule" "blog_everything_out" {
-//  type        = "egress"
-//  from_port   = 0
-//  to_port     = 0
-// protocol    = "-1"
-//  cidr_blocks = ["0.0.0.0/0"]
-//
-//  security_group_id = aws_security_group.blog.id
-//}
+  launch_template_name = "blog"
+  security_groups      = [module.blog_sg.id]
+  instance_type        = var.instance_type
+  image_id             = data.aws_ami.app_ami.id
+
+  traffic_source_attachments = {
+    blog-alb ={
+      traffic_source_identifier = aws_lb_target_group.blog.arn
+    }
+  }
+}
