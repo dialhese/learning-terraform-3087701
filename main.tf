@@ -3,7 +3,6 @@ data "aws_ami" "app_ami" {
 
   filter {
     name   = "name"
-    //values = ["bitnami-tomcat-*-x86_64-hvm-ebs-nami"]
     values = ["al2023-ami-*-x86_64"]
 
   }
@@ -13,13 +12,8 @@ data "aws_ami" "app_ami" {
     values = ["hvm"]
   }
 
-  //owners = ["979382823631"] # Bitnami
   owners = ["137112412989"] # Amazon
 }
-
-//data "aws_vpc" "default" {
-//  default = true
-//}
 
 module "blog_vpc" {
   source = "terraform-aws-modules/vpc/aws"
@@ -44,8 +38,6 @@ module "blog_sg" {
   version = "6.0.0"
   name = "blog_new"
 
-
-  //vpc_id         = data.aws_vpc.default.id
   vpc_id         = module.blog_vpc.vpc_id
   ingress_rules  = {
     http = {
@@ -119,6 +111,17 @@ module "blog_autoscaling" {
   instance_type        = var.instance_type
   image_id             = data.aws_ami.app_ami.id
 
+
+  user_data = base64encode(<<-EOF
+              #!/bin/bash
+              yum update -y
+              yum install -y httpd
+              systemctl start httpd
+              systemctl enable httpd
+              echo "<h1>Hello from Terraform</h1>" > /var/www/html/index.html
+              EOF
+  )
+  
   traffic_source_attachments = {
     blog-alb ={
       traffic_source_identifier = aws_lb_target_group.blog.arn
