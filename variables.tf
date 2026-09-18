@@ -23,7 +23,7 @@ variable "environment" {
     name = string
     network_prefix = string
   })
-  default = '"dev"
+  default = "dev"
   network_prefix = "10.0"
 }
 
