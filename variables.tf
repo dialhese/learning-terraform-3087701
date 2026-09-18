@@ -20,11 +20,13 @@ variable "ami_filter" {
 variable "environment" {
   description = "Deployment environment"
   type = object ({
-    name = string
-    network_prefix = string
+    name                = string
+    network_prefix      = string
   })
-  default = "dev"
-  network_prefix = "10.0"
+  default = {
+    name                = "dev"
+    network_prefix      = "10.0"
+  }
 }
 
 
