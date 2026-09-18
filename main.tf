@@ -95,11 +95,17 @@ resource "aws_lb_target_group" "blog" {
   vpc_id   = module.blog_vpc.vpc_id
 }
 
+resource "aws_lb_target_group_attachment" "blog" {
+  target_group_arn = aws_lb_target_group.blog.arn
+  target_id        = aws_instance.blog.id
+  port             = 80
+}
+
 
 module "blog_autoscaling" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "9.3.1"
-  name = "blog"
+  name    = "blog"
 
   min_size = 1
   max_size = 2
